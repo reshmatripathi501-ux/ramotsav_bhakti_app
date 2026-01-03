@@ -29,7 +29,7 @@ export const devotionalPlaylists: Playlist[] = [
         id: 'playlist_2',
         title: 'Peaceful Mantras',
         description: 'Chants and mantras for meditation and a peaceful mind.',
-        coverUrl: 'https://i.pinimg.com/564x/e7/87/42/e787425316f73a3c8iot_8a.jpg',
+        coverUrl: 'https://i.pinimg.com/564x/a8/9b/be/a89bbe452b453a256d0b5168a2f5854b.jpg',
         songs: [
              {
                 title: 'Om Namah Shivaya',
