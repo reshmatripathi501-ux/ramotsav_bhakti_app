@@ -128,6 +128,49 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
         }
     };
 
+    const sanitizeFilename = (name: string) => name.replace(/[^a-z0-9_.]/gi, '_').toLowerCase();
+
+    const handleShare = async () => {
+        try {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            const file = new File([blob], `${sanitizeFilename(title)}.mp4`, { type: blob.type });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: title,
+                    text: `Watch this beautiful video from Ramotsav App: ${title}`,
+                    files: [file],
+                });
+            } else {
+                 alert('Sharing files is not supported on this browser.');
+            }
+        } catch (error) {
+            console.error('Error sharing video:', error);
+            alert('Could not share the video.');
+        }
+    };
+
+    const handleDownload = async () => {
+        try {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `${sanitizeFilename(title)}.mp4`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch (error) {
+            console.error('Error downloading video:', error);
+            alert('Could not download the video.');
+        }
+    };
+
+
     const formatTime = (time: number) => {
         if (isNaN(time) || time === 0) return "0:00";
         const minutes = Math.floor(time / 60);
@@ -148,6 +191,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
                 className="w-full h-full object-contain"
                 onClick={togglePlayPause}
                 playsInline
+                crossOrigin="anonymous"
             />
 
             <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isPlaying && !showControls ? 'opacity-0' : 'opacity-100'}`}>
@@ -179,9 +223,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
                         </div>
                         <span className="text-xs">{formatTime(currentTime)} / {formatTime(duration)}</span>
                     </div>
-                     <div className="flex items-center gap-3">
-                        {isPipSupported && <button onClick={togglePiP} className="text-xl"><i className="far fa-window-restore"></i></button>}
-                        <button onClick={toggleFullScreen} className="text-xl"><i className="fas fa-expand"></i></button>
+                     <div className="flex items-center gap-4">
+                        <button onClick={handleShare} className="text-xl" title="Share"><i className="fas fa-share"></i></button>
+                        <button onClick={handleDownload} className="text-xl" title="Download"><i className="fas fa-download"></i></button>
+                        {isPipSupported && <button onClick={togglePiP} className="text-xl" title="Picture-in-Picture"><i className="far fa-window-restore"></i></button>}
+                        <button onClick={toggleFullScreen} className="text-xl" title="Fullscreen"><i className="fas fa-expand"></i></button>
                     </div>
                 </div>
             </div>
