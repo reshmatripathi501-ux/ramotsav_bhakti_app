@@ -1,5 +1,8 @@
 {
   "name": "Ramotsav Bhakti App",
   "description": "A modern devotional application for sharing spiritual content like videos, bhajans, and Granths. Features include a 3D-styled media feed, an interactive Jaap counter, and an AI assistant powered by Gemini to answer questions about scriptures. All data is persisted locally for a seamless user experience.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
 }

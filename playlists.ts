@@ -12,16 +12,19 @@ export const devotionalPlaylists: Playlist[] = [
                 title: 'Ram Siya Ram',
                 artist: 'Sachet Tandon',
                 url: 'https://storage.googleapis.com/static.aiforkids.com/ramotsav/ram_siya_ram.mp3',
+                thumbnailUrl: 'https://i.pinimg.com/564x/c2/39/c0/c239c0540a1586a111a43a755601931a.jpg',
             },
             {
                 title: 'Shri Ram Janki',
                 artist: 'Anuradha Paudwal',
                 url: 'https://storage.googleapis.com/static.aiforkids.com/ramotsav/shri_ram_janki.mp3',
+                thumbnailUrl: 'https://i.pinimg.com/564x/c2/39/c0/c239c0540a1586a111a43a755601931a.jpg',
             },
             {
                 title: 'Ram Aayenge',
                 artist: 'Swati Mishra',
                 url: 'https://storage.googleapis.com/static.aiforkids.com/ramotsav/ram_aayenge.mp3',
+                thumbnailUrl: 'https://i.pinimg.com/564x/c2/39/c0/c239c0540a1586a111a43a755601931a.jpg',
             }
         ],
     },
@@ -35,11 +38,13 @@ export const devotionalPlaylists: Playlist[] = [
                 title: 'Om Namah Shivaya',
                 artist: 'Krishna Das',
                 url: 'https://storage.googleapis.com/static.aiforkids.com/ramotsav/om_namah_shivaya.mp3',
+                thumbnailUrl: 'https://i.pinimg.com/564x/a8/9b/be/a89bbe452b453a256d0b5168a2f5854b.jpg',
             },
             {
                 title: 'Gayatri Mantra',
                 artist: 'Anuradha Paudwal',
                 url: 'https://storage.googleapis.com/static.aiforkids.com/ramotsav/gayatri_mantra.mp3',
+                thumbnailUrl: 'https://i.pinimg.com/564x/a8/9b/be/a89bbe452b453a256d0b5168a2f5854b.jpg',
             },
         ],
     }

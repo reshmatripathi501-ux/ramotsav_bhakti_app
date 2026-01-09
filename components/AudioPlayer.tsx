@@ -1,13 +1,14 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MusicIcon } from './icons';
 
 interface AudioPlayerProps {
     src: string;
     title: string;
+    artist?: string;
+    thumbnailUrl?: string;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, artist, thumbnailUrl }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -34,9 +35,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title }) => {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: title,
-                artist: 'Ramotsav App',
+                artist: artist || 'Ramotsav App',
                 album: 'Bhakti Sangeet',
-                artwork: [{ src: 'https://i.pinimg.com/564x/c2/39/c0/c239c0540a1586a111a43a755601931a.jpg', sizes: '512x512', type: 'image/jpeg' }]
+                artwork: [{ src: thumbnailUrl || 'https://i.pinimg.com/564x/c2/39/c0/c239c0540a1586a111a43a755601931a.jpg', sizes: '512x512', type: 'image/jpeg' }]
             });
             navigator.mediaSession.setActionHandler('play', () => audio.play());
             navigator.mediaSession.setActionHandler('pause', () => audio.pause());
@@ -50,7 +51,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title }) => {
             audio.removeEventListener('play', onPlay);
             audio.removeEventListener('pause', onPause);
         };
-    }, [title]);
+    }, [title, thumbnailUrl, artist]);
 
     const togglePlayPause = () => {
         if (audioRef.current) {
@@ -72,29 +73,36 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title }) => {
     };
 
     return (
-        <div className="bg-black/50 rounded-lg p-4 space-y-3">
+        <div className="bg-black/5 rounded-lg p-3 space-y-2 dark:bg-black/50">
             <audio ref={audioRef} src={src} preload="metadata" />
-            <div className="flex items-center gap-4">
-                <button onClick={togglePlayPause} className="text-amber-400 text-4xl">
+            <div className="flex items-center gap-3">
+                 {thumbnailUrl ? (
+                    <img src={thumbnailUrl} alt={title} className="w-14 h-14 object-cover rounded-md flex-shrink-0" />
+                ) : (
+                    <div className="w-14 h-14 bg-amber-200 dark:bg-amber-900/50 rounded-md flex items-center justify-center flex-shrink-0">
+                        <MusicIcon className="w-8 h-8 text-amber-600 dark:text-amber-500" />
+                    </div>
+                )}
+                <div className="flex-1 w-full overflow-hidden">
+                    <h4 className="text-gray-800 dark:text-white font-semibold truncate">{title}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{artist || 'Bhakti Sangeet'}</p>
+                </div>
+                <button onClick={togglePlayPause} className="text-amber-500 dark:text-amber-400 text-4xl flex-shrink-0">
                     <i className={`fas ${isPlaying ? 'fa-pause-circle' : 'fa-play-circle'}`}></i>
                 </button>
-                <div className="w-full">
-                    <h4 className="text-white font-semibold truncate">{title}</h4>
-                    <p className="text-xs text-gray-400">Bhakti Sangeet</p>
-                </div>
             </div>
             <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{formatTime(currentTime)}</span>
                 <input
                     type="range"
                     min="0"
                     max="100"
                     value={progress}
                     onChange={handleSeek}
-                    className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
-                    style={{ background: `linear-gradient(to right, #FFD700 ${progress}%, #666 ${progress}%)` }}
+                    className="w-full h-1 bg-gray-300 dark:bg-white/20 rounded-lg appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(to right, #f59e0b ${progress}%, #9ca3af ${progress}%)` }}
                 />
-                <span className="text-xs text-gray-400">{formatTime(duration)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{formatTime(duration)}</span>
             </div>
         </div>
     );

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const DailyQuote: React.FC = () => {
@@ -9,9 +8,9 @@ const DailyQuote: React.FC = () => {
     };
 
     return (
-        <div className="bg-gradient-to-tr from-amber-900/40 to-amber-600/30 border border-amber-500/50 rounded-xl p-4 my-4 text-center shadow-lg">
-            <p className="text-white italic">"{quote.text}"</p>
-            <p className="text-right text-amber-300 text-sm mt-2">- {quote.author}</p>
+        <div className="bg-gradient-to-tr from-amber-200/40 to-amber-100/30 dark:from-amber-900/40 dark:to-amber-600/30 border border-amber-500/50 rounded-xl p-4 my-4 text-center shadow-lg">
+            <p className="text-gray-800 dark:text-white italic">"{quote.text}"</p>
+            <p className="text-right text-amber-700 dark:text-amber-300 text-sm mt-2">- {quote.author}</p>
         </div>
     );
 };

@@ -1,5 +1,4 @@
-
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { darshanImageBase64 } from "../image";
 
 const API_KEY = process.env.API_KEY;

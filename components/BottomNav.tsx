@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Section } from '../types';
-import { HomeIcon, GranthIcon, JaapIcon, UploadIcon, DarshanIcon, MusicPlaylistIcon } from './icons';
+import { HomeIcon, GranthIcon, JaapIcon, DarshanIcon, MusicPlaylistIcon, CommunityIcon } from './icons';
 
 interface BottomNavProps {
     activeSection: Section;
@@ -37,11 +36,11 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeSection, setActiveSection }
         { section: 'darshan', label: 'Darshan', icon: <DarshanIcon className="h-6 w-6" /> },
         { section: 'music', label: 'Music', icon: <MusicPlaylistIcon className="h-6 w-6" /> },
         { section: 'jaap', label: 'Jaap', icon: <JaapIcon className="h-7 w-7" /> },
-        { section: 'upload', label: 'Upload', icon: <UploadIcon className="h-6 w-6" /> },
+        { section: 'community', label: 'Community', icon: <CommunityIcon className="h-6 w-6" /> },
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[rgba(10,5,0,0.8)] backdrop-blur-lg border-t-2 border-amber-600 flex justify-around items-center z-50 shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/80 dark:bg-[rgba(10,5,0,0.8)] backdrop-blur-lg border-t-2 border-amber-600 flex justify-around items-center z-50 shadow-lg">
             {navItems.map(item => (
                 <NavItem 
                     key={item.section} 

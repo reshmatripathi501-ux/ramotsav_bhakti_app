@@ -1,13 +1,13 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface VideoPlayerProps {
     src: string;
     title: string;
     artworkUrl: string;
+    poster?: string;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl, poster }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -58,12 +58,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
         
         // Media Session API
         if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
+            const metadata: MediaMetadataInit = {
                 title: title,
                 artist: 'Ramotsav App',
                 album: 'Bhakti Videos',
-                artwork: [{ src: artworkUrl, sizes: '512x512', type: 'image/jpeg' }]
-            });
+            };
+            if (artworkUrl) {
+                metadata.artwork = [{ src: artworkUrl, sizes: '512x512', type: 'image/jpeg' }];
+            }
+            navigator.mediaSession.metadata = new MediaMetadata(metadata);
+
             navigator.mediaSession.setActionHandler('play', () => video.play());
             navigator.mediaSession.setActionHandler('pause', () => video.pause());
             navigator.mediaSession.setActionHandler('seekbackward', () => { video.currentTime -= 10; });
@@ -76,13 +80,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
             video.removeEventListener('play', onPlay);
             video.removeEventListener('pause', onPause);
         };
-    }, [title, artworkUrl]);
+    }, [title, artworkUrl, src]);
 
-    const togglePlayPause = () => {
+    const togglePlayPause = useCallback(() => {
         if (videoRef.current) {
             videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
         }
-    };
+    }, []);
     
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (videoRef.current && duration > 0) {
@@ -93,31 +97,50 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = Number(e.target.value);
         setVolume(newVolume);
-        setIsMuted(newVolume === 0);
-        if (videoRef.current) videoRef.current.volume = newVolume;
+        if (videoRef.current) {
+            videoRef.current.volume = newVolume;
+            const newMuted = newVolume === 0;
+            videoRef.current.muted = newMuted;
+            setIsMuted(newMuted);
+        }
     };
     
-    const toggleMute = () => {
+    const toggleMute = useCallback(() => {
         if (videoRef.current) {
             const currentlyMuted = !videoRef.current.muted;
             videoRef.current.muted = currentlyMuted;
             setIsMuted(currentlyMuted);
-            if (currentlyMuted) setVolume(0);
-            else if (volume === 0) setVolume(1); // Unmute to full volume if it was 0
+            if (currentlyMuted) {
+                setVolume(0);
+            } else if (volume === 0) {
+                setVolume(1);
+                videoRef.current.volume = 1;
+            }
         }
-    };
+    }, [volume]);
 
-    const skipTime = (time: number) => {
+    const skipTime = useCallback((time: number) => {
         if (videoRef.current) videoRef.current.currentTime += time;
-    };
+    }, []);
 
-    const toggleFullScreen = () => {
+    const toggleFullScreen = useCallback(() => {
         if (!document.fullscreenElement) {
             containerRef.current?.requestFullscreen();
         } else {
             document.exitFullscreen();
         }
-    };
+    }, []);
+
+    const changeVolume = useCallback((delta: number) => {
+        if (videoRef.current) {
+            const newVolume = Math.max(0, Math.min(1, videoRef.current.volume + delta));
+            videoRef.current.volume = newVolume;
+            setVolume(newVolume);
+            const newMutedState = newVolume === 0;
+            videoRef.current.muted = newMutedState;
+            setIsMuted(newMutedState);
+        }
+    }, []);
 
     const togglePiP = () => {
         if (!isPipSupported) return;
@@ -128,49 +151,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
         }
     };
 
-    const sanitizeFilename = (name: string) => name.replace(/[^a-z0-9_.]/gi, '_').toLowerCase();
-
-    const handleShare = async () => {
-        try {
-            const response = await fetch(src);
-            const blob = await response.blob();
-            const file = new File([blob], `${sanitizeFilename(title)}.mp4`, { type: blob.type });
-            
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: title,
-                    text: `Watch this beautiful video from Ramotsav App: ${title}`,
-                    files: [file],
-                });
-            } else {
-                 alert('Sharing files is not supported on this browser.');
-            }
-        } catch (error) {
-            console.error('Error sharing video:', error);
-            alert('Could not share the video.');
-        }
-    };
-
-    const handleDownload = async () => {
-        try {
-            const response = await fetch(src);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `${sanitizeFilename(title)}.mp4`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-        } catch (error) {
-            console.error('Error downloading video:', error);
-            alert('Could not download the video.');
-        }
-    };
-
-
     const formatTime = (time: number) => {
         if (isNaN(time) || time === 0) return "0:00";
         const minutes = Math.floor(time / 60);
@@ -178,16 +158,67 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
+     useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                return;
+            }
+
+            switch (event.code) {
+                case 'Space': case 'KeyK':
+                    event.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowLeft': case 'KeyJ':
+                    event.preventDefault();
+                    skipTime(-10);
+                    break;
+                case 'ArrowRight': case 'KeyL':
+                    event.preventDefault();
+                    skipTime(10);
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    changeVolume(0.1);
+                    break;
+                case 'ArrowDown':
+                    event.preventDefault();
+                    changeVolume(-0.1);
+                    break;
+                case 'KeyM':
+                    event.preventDefault();
+                    toggleMute();
+                    break;
+                case 'KeyF':
+                    event.preventDefault();
+                    toggleFullScreen();
+                    break;
+            }
+        };
+
+        container.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            container.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [togglePlayPause, skipTime, changeVolume, toggleMute, toggleFullScreen]);
+
     return (
         <div 
             ref={containerRef}
-            className="relative bg-black rounded-lg overflow-hidden aspect-video group" 
+            tabIndex={0}
+            className="relative bg-black rounded-lg overflow-hidden aspect-video group outline-none" 
             onMouseMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
         >
             <video
                 ref={videoRef}
                 src={src}
+                poster={poster}
                 className="w-full h-full object-contain"
                 onClick={togglePlayPause}
                 playsInline
@@ -224,8 +255,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, title, artworkUrl }) => 
                         <span className="text-xs">{formatTime(currentTime)} / {formatTime(duration)}</span>
                     </div>
                      <div className="flex items-center gap-4">
-                        <button onClick={handleShare} className="text-xl" title="Share"><i className="fas fa-share"></i></button>
-                        <button onClick={handleDownload} className="text-xl" title="Download"><i className="fas fa-download"></i></button>
                         {isPipSupported && <button onClick={togglePiP} className="text-xl" title="Picture-in-Picture"><i className="far fa-window-restore"></i></button>}
                         <button onClick={toggleFullScreen} className="text-xl" title="Fullscreen"><i className="fas fa-expand"></i></button>
                     </div>
